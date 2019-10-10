@@ -2,15 +2,19 @@ package com.znlccy.erudite.activity;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.znlccy.erudite.R;
 
@@ -126,7 +130,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * 清除底部按钮选中的状态
      */
     private void clearBottomImageState() {
-        tv_course.setTextColor(Color.parseColor("#6666666"));
+        tv_course.setTextColor(Color.parseColor("#666666"));
         tv_exercises.setTextColor(Color.parseColor("#666666"));
         tv_myInfo.setTextColor(Color.parseColor("#666666"));
         iv_course.setImageResource(R.drawable.main_course_icon);
@@ -168,19 +172,108 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case 2:
                 mMyInfoBtn.setSelected(true);
-
+                iv_myInfo.setImageResource(R.drawable.main_my_icon_selected);
+                tv_myInfo.setTextColor(Color.parseColor("#0097F7"));
+                rl_title_bar.setVisibility(View.GONE);
                 break;
         }
     }
 
     /**
-     *
+     * 移除不需要的视图
      */
-    private void setInitStatus() {
-
+    private void removeAllView() {
+        for (int i=0; i<mBodyLayout.getChildCount(); i++) {
+            mBodyLayout.getChildAt(i).setVisibility(View.GONE);
+        }
     }
 
-    private void selectDisplayView(int state) {
+    /**
+     * 设置界面view的初始化状态
+     */
+    private void setInitStatus() {
+        clearBottomImageState();
+        setSelectedStatus(0);
+        createView(0);
+    }
 
+    /**
+     * 显示对面的页面
+     * @param index
+     */
+    private void selectDisplayView(int index) {
+        removeAllView();
+        createView(index);
+        setSelectedStatus(index);
+    }
+
+    /**
+     * 选择视图
+     * @param viewIndex
+     */
+    private void createView(int viewIndex) {
+        switch (viewIndex) {
+            case 0:
+                //课程界面
+                break;
+            case 1:
+                //习题界面
+                break;
+            case 2:
+                //我的界面
+                break;
+        }
+    }
+
+    //记录第一次点击时的时间
+    protected long exitTime;
+
+    /**
+     * 键盘点击事件
+     * @param keyCode
+     * @param event
+     * @return
+     */
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_DOWN) {
+            if ((System.currentTimeMillis() - exitTime) > 2000) {
+                Toast.makeText(MainActivity.this, "再按一次退出博学谷", Toast.LENGTH_SHORT).show();
+                exitTime = System.currentTimeMillis();
+            } else {
+                MainActivity.this.finish();
+                if (readLoginStatus()) {
+                    clearLoginStatus();
+                }
+                System.exit(0);
+            }
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    /**
+     * 获取SharedPrefenrences中的登录状态
+     * @return
+     */
+    private boolean readLoginStatus() {
+        SharedPreferences sp = getSharedPreferences("loginInfo", MODE_PRIVATE);
+        boolean isLogin = sp.getBoolean("isLogin", false);
+        return isLogin;
+    }
+
+    /**
+     * 清除SharedPrefenrences中的登录状态
+     */
+    private void clearLoginStatus() {
+        SharedPreferences sp = getSharedPreferences("loginInfo", Context.MODE_PRIVATE);
+        //获取编辑器
+        SharedPreferences.Editor editor = sp.edit();
+        //清除登录状态
+        editor.putBoolean("isLogin", false);
+        //清除登录时的用户名
+        editor.putString("loginUserName", "");
+        //提交修改
+        editor.commit();
     }
 }
