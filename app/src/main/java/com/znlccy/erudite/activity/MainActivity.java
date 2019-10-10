@@ -1,8 +1,10 @@
 package com.znlccy.erudite.activity;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.graphics.Color;
@@ -17,6 +19,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.znlccy.erudite.R;
+import com.znlccy.erudite.view.MyInfoView;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -40,6 +43,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private TextView tv_back;
     private TextView tv_main_title;
     private RelativeLayout rl_title_bar;
+
+    //导入我的视图
+    private MyInfoView mMyInfoView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -221,6 +227,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case 2:
                 //我的界面
+                if (mMyInfoView == null) {
+                    mMyInfoView = new MyInfoView(this);
+                    mBodyLayout.addView(mMyInfoView.getView());
+                } else {
+                    mMyInfoView.getView();
+                }
+                mMyInfoView.showView();
                 break;
         }
     }
@@ -275,5 +288,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         editor.putString("loginUserName", "");
         //提交修改
         editor.commit();
+    }
+
+    /**
+     * 回调函数
+     * @param requestCode
+     * @param resultCode
+     * @param data
+     */
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (data != null) {
+            //从设置界面或登录界面传递过来的登录状态
+            boolean isLogin = data.getBooleanExtra("isLogin", false);
+            //登录成功时显示课程界面
+            if (isLogin) {
+                clearBottomImageState();
+                selectDisplayView(0);
+            }
+            //登录成功或退出登录时根据isLogin设置我的界面
+            if (mMyInfoView != null) {
+                mMyInfoView.setLoginParams(isLogin);
+            }
+        }
     }
 }
